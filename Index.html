@@ -1,18 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Prompt Grammar Checker</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superhero Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
-    <h1>Image Prompt Checker</h1>
-    <textarea id="prompt" placeholder="Describe your image in English..."></textarea>
-    <button onclick="checkPrompt()">Check Prompt</button>
-    <div id="result"></div>
-  </div>
-  <script src="script.js"></script>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold mb-6 text-center">Superhero Description Generator</h1>
+        <form id="heroForm" class="space-y-4">
+            <div>
+                <label for="heroName" class="block mb-2">Superhero Name:</label>
+                <input type="text" id="heroName" name="heroName" required 
+                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="heroDescription" class="block mb-2">Superhero Description:</label>
+                <textarea id="heroDescription" name="heroDescription" rows="4" required
+                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <div>
+                <label for="superpowers" class="block mb-2">Superpowers:</label>
+                <input type="text" id="superpowers" name="superpowers" required
+                    class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button type="submit" 
+                class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300">
+                Generate Superhero
+            </button>
+        </form>
+        <div id="errorMessage" class="text-red-500 mt-4 text-center hidden"></div>
+        <div id="resultContainer" class="mt-6 hidden">
+            <h2 class="text-2xl font-bold mb-4 text-center">Generated Superhero</h2>
+            <div id="imageContainer" class="mb-4 flex justify-center">
+                <img id="heroImage" src="" alt="Generated Superhero" class="max-w-full h-auto rounded-lg">
+            </div>
+            <div id="heroDetails" class="text-center"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('heroForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const errorMessage = document.getElementById('errorMessage');
+            const resultContainer = document.getElementById('resultContainer');
+            const heroImage = document.getElementById('heroImage');
+            const heroDetails = document.getElementById('heroDetails');
+
+            // Clear previous results
+            errorMessage.textContent = '';
+            errorMessage.classList.add('hidden');
+            resultContainer.classList.add('hidden');
+
+            // Basic grammar and spelling check
+            const description = document.getElementById('heroDescription').value;
+            const name = document.getElementById('heroName').value;
+            const superpowers = document.getElementById('superpowers').value;
+
+            // Simple grammar check function
+            function checkGrammar(text) {
+                // Basic checks - you might want to expand this
+                const wordCount = text.trim().split(/\s+/).length;
+                const hasCapitalStart = /^[A-Z]/.test(text);
+                const hasPunctuation = /[.!?]$/.test(text);
+                
+                return wordCount > 3 && hasCapitalStart && hasPunctuation;
+            }
+
+            // Validate inputs
+            if (!checkGrammar(description) || !checkGrammar(name)) {
+                errorMessage.textContent = 'Please check your grammar and spelling. Ensure each field starts with a capital letter and ends with proper punctuation.';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                // Call AI image generation API (placeholder)
+                const response = await fetch('https://api.example.com/generate-superhero-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        description: description,
+                        superpowers: superpowers
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Image generation failed');
+                }
+
+                const imageData = await response.json();
+
+                // Display results
+                heroImage.src = imageData.imageUrl;
+                heroDetails.innerHTML = `
+                    <h3 class="text-xl font-semibold">${name}</h3>
+                    <p>${description}</p>
+                    <p><strong>Superpowers:</strong> ${superpowers}</p>
+                `;
+
+                resultContainer.classList.remove('hidden');
+            } catch (error) {
+                errorMessage.textContent = 'Failed to generate superhero image, I don't understand your text, there are too many mistakes. Please try again.';
+                errorMessage.classList.remove('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
